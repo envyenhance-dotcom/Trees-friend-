@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm install --no-frozen-lockfile && cd artifacts/tree-marketplace && pnpm build",
-  "outputDirectory": "artifacts/tree-marketplace/dist",
+  "buildCommand": "cd ../.. && pnpm install --no-frozen-lockfile && cd artifacts/tree-marketplace && pnpm build",
+  "outputDirectory": "dist",
   "installCommand": "pnpm install --no-frozen-lockfile"
 }
