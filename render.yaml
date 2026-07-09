@@ -5,15 +5,17 @@ services:
     region: singapore
     plan: free
     buildCommand: pnpm install --no-frozen-lockfile && pnpm --filter @workspace/api-server run build
-    startCommand: cd artifacts/api-server && node dist/index.mjs
+    startCommand: cd artifacts/api-server && node --enable-source-maps ./dist/index.mjs
     envVars:
       - key: PORT
         value: "10000"
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false
+        value: postgresql://neondb_owner:npg_Kk7Te0mtycxw@ep-icy-band-aouh5uyc.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
       - key: CLERK_PUBLISHABLE_KEY
-        sync: false
+        value: pk_test_cG9saXJlLW1vbGx4LTgxLmNsZXJrLmFjY291bnRzLmRldiQ
       - key: CLERK_SECRET_KEY
-        sync: false
+        value: sk_test_ptgjjrXgYz8enCWK6vwYIHKPIe7GfXzKp9YnB6z5Gr
+      - key: COURIER_ENCRYPTION_KEY
+        value: marketplace-courier-encryption-key-32chr
