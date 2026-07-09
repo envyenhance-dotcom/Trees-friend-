@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter @workspace/tree-marketplace run build",
+  "buildCommand": "bash build.sh",
   "outputDirectory": "artifacts/tree-marketplace/dist",
   "installCommand": "pnpm install --no-frozen-lockfile"
 }
