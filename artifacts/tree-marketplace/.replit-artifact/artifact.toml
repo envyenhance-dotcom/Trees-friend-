@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Tree Marketplace"
+version = "1.0.0"
+id = "artifacts/tree-marketplace"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22564
+
+[services.development]
+run = "pnpm --filter @workspace/tree-marketplace run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/tree-marketplace", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/tree-marketplace/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22564"
+BASE_PATH = "/"

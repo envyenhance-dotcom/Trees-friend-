@@ -1,0 +1,2483 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Tree Marketplace API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: categories
+    description: Tree categories
+  - name: trees
+    description: Tree encyclopedia
+  - name: varieties
+    description: Tree varieties
+  - name: listings
+    description: Seller listings
+  - name: cart
+    description: Shopping cart
+  - name: orders
+    description: Orders
+  - name: payments
+    description: Payment processing
+  - name: profiles
+    description: User profiles
+  - name: sellers
+    description: Seller storefronts
+  - name: reviews
+    description: Ratings and reviews
+  - name: wishlist
+    description: Buyer wishlist
+  - name: varietyRequests
+    description: Variety requests
+  - name: couriers
+    description: Courier integrations
+  - name: shipments
+    description: Shipment tracking
+  - name: admin
+    description: Admin operations
+  - name: settings
+    description: App settings (API keys)
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # ── Categories ──────────────────────────────────────────────
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List all categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create category (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /categories/{id}:
+    put:
+      operationId: updateCategory
+      tags: [categories]
+      summary: Update category (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    delete:
+      operationId: deleteCategory
+      tags: [categories]
+      summary: Delete category (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /categories/{slug}/trees:
+    get:
+      operationId: listTreesByCategory
+      tags: [categories]
+      summary: List trees by category slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Trees in category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedTrees"
+
+  # ── Trees ────────────────────────────────────────────────────
+  /trees:
+    get:
+      operationId: listTrees
+      tags: [trees]
+      summary: List trees with optional search/filter
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+        - name: search
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: category
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: climate
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Paginated list of trees
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedTrees"
+    post:
+      operationId: createTree
+      tags: [trees]
+      summary: Create a new tree (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TreeInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tree"
+
+  /trees/search:
+    get:
+      operationId: searchTrees
+      tags: [trees]
+      summary: Search trees and varieties (autocomplete)
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResults"
+
+  /trees/{slug}:
+    get:
+      operationId: getTree
+      tags: [trees]
+      summary: Get tree by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tree details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TreeDetail"
+        "404":
+          description: Not found
+    put:
+      operationId: updateTree
+      tags: [trees]
+      summary: Update tree (admin)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TreeInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tree"
+    delete:
+      operationId: deleteTree
+      tags: [trees]
+      summary: Delete tree (admin)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /trees/{slug}/varieties:
+    get:
+      operationId: listTreeVarieties
+      tags: [varieties]
+      summary: Get all varieties for a tree
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Varieties list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Variety"
+
+  /trees/{slug}/images:
+    post:
+      operationId: addTreeImage
+      tags: [trees]
+      summary: Add image to tree (admin)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TreeImageInput"
+      responses:
+        "201":
+          description: Image added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TreeImage"
+
+  # ── Varieties ────────────────────────────────────────────────
+  /varieties/{id}:
+    get:
+      operationId: getVariety
+      tags: [varieties]
+      summary: Get variety by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Variety details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VarietyDetail"
+    put:
+      operationId: updateVariety
+      tags: [varieties]
+      summary: Update variety (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VarietyInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Variety"
+    delete:
+      operationId: deleteVariety
+      tags: [varieties]
+      summary: Delete variety (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /varieties:
+    post:
+      operationId: createVariety
+      tags: [varieties]
+      summary: Create variety (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VarietyInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Variety"
+
+  /varieties/{id}/images:
+    post:
+      operationId: addVarietyImage
+      tags: [varieties]
+      summary: Add image to variety (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VarietyImageInput"
+      responses:
+        "201":
+          description: Image added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TreeImage"
+
+  /varieties/{id}/listings:
+    get:
+      operationId: listVarietyListings
+      tags: [varieties]
+      summary: Get approved listings for a variety (sorted by price asc)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Listings for variety
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ListingPublic"
+
+  # ── Listings ─────────────────────────────────────────────────
+  /listings:
+    get:
+      operationId: listListings
+      tags: [listings]
+      summary: List all listings (admin)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Listings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedListings"
+    post:
+      operationId: createListing
+      tags: [listings]
+      summary: Create listing (seller)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+
+  /listings/mine:
+    get:
+      operationId: listMyListings
+      tags: [listings]
+      summary: Get current seller's listings
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: My listings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedListings"
+
+  /listings/{id}:
+    get:
+      operationId: getListing
+      tags: [listings]
+      summary: Get listing by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+    put:
+      operationId: updateListing
+      tags: [listings]
+      summary: Update listing (seller/admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+    delete:
+      operationId: deleteListing
+      tags: [listings]
+      summary: Delete listing (seller/admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /listings/{id}/approve:
+    post:
+      operationId: approveListing
+      tags: [listings]
+      summary: Approve listing (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+
+  /listings/{id}/reject:
+    post:
+      operationId: rejectListing
+      tags: [listings]
+      summary: Reject listing (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectListingInput"
+      responses:
+        "200":
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+
+  # ── Cart ─────────────────────────────────────────────────────
+  /cart:
+    get:
+      operationId: getCart
+      tags: [cart]
+      summary: Get current user's cart
+      responses:
+        "200":
+          description: Cart items grouped by seller
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartSummary"
+    post:
+      operationId: addToCart
+      tags: [cart]
+      summary: Add item to cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CartItemInput"
+      responses:
+        "201":
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartItem"
+
+  /cart/{id}:
+    put:
+      operationId: updateCartItem
+      tags: [cart]
+      summary: Update cart item quantity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CartItemUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartItem"
+    delete:
+      operationId: removeCartItem
+      tags: [cart]
+      summary: Remove item from cart
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # ── Orders ───────────────────────────────────────────────────
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List current user's orders
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOrders"
+
+  /orders/all:
+    get:
+      operationId: listAllOrders
+      tags: [orders]
+      summary: List all orders (admin)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: All orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOrders"
+
+  /orders/seller:
+    get:
+      operationId: listSellerOrders
+      tags: [orders]
+      summary: List orders for current seller
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Seller orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOrders"
+
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      summary: Get order by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderDetail"
+
+  /orders/{id}/status:
+    put:
+      operationId: updateOrderStatus
+      tags: [orders]
+      summary: Update order status (seller/admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderStatusUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  # ── Payments ─────────────────────────────────────────────────
+  /payments/bkash/create:
+    post:
+      operationId: createBkashPayment
+      tags: [payments]
+      summary: Create bKash payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BkashPaymentInput"
+      responses:
+        "200":
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BkashPaymentResponse"
+
+  /payments/bkash/execute:
+    post:
+      operationId: executeBkashPayment
+      tags: [payments]
+      summary: Execute bKash payment after redirect
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BkashExecuteInput"
+      responses:
+        "200":
+          description: Payment executed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BkashExecuteResponse"
+
+  /payments/bkash/callback:
+    get:
+      operationId: bkashCallback
+      tags: [payments]
+      summary: bKash payment callback
+      parameters:
+        - name: paymentID
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect after payment
+
+  # ── Profiles ─────────────────────────────────────────────────
+  /profiles/me:
+    get:
+      operationId: getMyProfile
+      tags: [profiles]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+    put:
+      operationId: updateMyProfile
+      tags: [profiles]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  /profiles/become-seller:
+    post:
+      operationId: becomeSeller
+      tags: [profiles]
+      summary: Request seller role
+      responses:
+        "200":
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  /profiles/sync:
+    post:
+      operationId: syncProfile
+      tags: [profiles]
+      summary: Sync/create profile from Clerk (called on auth)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileSyncInput"
+      responses:
+        "200":
+          description: Profile synced
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  # ── Sellers ──────────────────────────────────────────────────
+  /sellers:
+    get:
+      operationId: listSellers
+      tags: [sellers]
+      summary: List all sellers (admin)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Sellers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedProfiles"
+
+  /sellers/{id}:
+    get:
+      operationId: getSellerProfile
+      tags: [sellers]
+      summary: Get public seller storefront
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Seller public profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SellerStorefront"
+
+  /sellers/{id}/verify:
+    post:
+      operationId: verifySeller
+      tags: [sellers]
+      summary: Verify seller (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  /sellers/{id}/suspend:
+    post:
+      operationId: suspendSeller
+      tags: [sellers]
+      summary: Suspend or unsuspend seller (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuspendInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  # ── Reviews ──────────────────────────────────────────────────
+  /reviews:
+    get:
+      operationId: listReviews
+      tags: [reviews]
+      summary: List reviews for a target
+      parameters:
+        - name: targetType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [tree, variety, seller]
+        - name: targetId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Reviews
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedReviews"
+    post:
+      operationId: createReview
+      tags: [reviews]
+      summary: Submit a review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewInput"
+      responses:
+        "201":
+          description: Review created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  /reviews/stats:
+    get:
+      operationId: getReviewStats
+      tags: [reviews]
+      summary: Get rating statistics for a target
+      parameters:
+        - name: targetType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [tree, variety, seller]
+        - name: targetId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Rating stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewStats"
+
+  # ── Wishlist ─────────────────────────────────────────────────
+  /wishlist:
+    get:
+      operationId: listWishlist
+      tags: [wishlist]
+      summary: Get current user's wishlist
+      responses:
+        "200":
+          description: Wishlist
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WishlistItem"
+    post:
+      operationId: addToWishlist
+      tags: [wishlist]
+      summary: Add listing to wishlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WishlistInput"
+      responses:
+        "201":
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WishlistItem"
+
+  /wishlist/{id}:
+    delete:
+      operationId: removeFromWishlist
+      tags: [wishlist]
+      summary: Remove item from wishlist
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # ── Variety Requests ─────────────────────────────────────────
+  /variety-requests:
+    get:
+      operationId: listVarietyRequests
+      tags: [varietyRequests]
+      summary: List variety requests (admin or seller's own)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedVarietyRequests"
+    post:
+      operationId: createVarietyRequest
+      tags: [varietyRequests]
+      summary: Submit variety request (seller)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VarietyRequestInput"
+      responses:
+        "201":
+          description: Request submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VarietyRequest"
+
+  /variety-requests/{id}/approve:
+    post:
+      operationId: approveVarietyRequest
+      tags: [varietyRequests]
+      summary: Approve variety request and create variety (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveVarietyRequestInput"
+      responses:
+        "200":
+          description: Approved and variety created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VarietyRequest"
+
+  /variety-requests/{id}/reject:
+    post:
+      operationId: rejectVarietyRequest
+      tags: [varietyRequests]
+      summary: Reject variety request (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectVarietyRequestInput"
+      responses:
+        "200":
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VarietyRequest"
+
+  # ── Courier Integrations ─────────────────────────────────────
+  /couriers:
+    get:
+      operationId: listCourierIntegrations
+      tags: [couriers]
+      summary: List seller's courier integrations
+      responses:
+        "200":
+          description: Courier integrations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CourierIntegration"
+    post:
+      operationId: createCourierIntegration
+      tags: [couriers]
+      summary: Add courier integration (seller)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourierIntegrationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourierIntegration"
+
+  /couriers/{id}:
+    delete:
+      operationId: deleteCourierIntegration
+      tags: [couriers]
+      summary: Remove courier integration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+    put:
+      operationId: updateCourierIntegration
+      tags: [couriers]
+      summary: Update courier integration (toggle active/default)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourierIntegrationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourierIntegration"
+
+  /couriers/{id}/test:
+    post:
+      operationId: testCourierConnection
+      tags: [couriers]
+      summary: Test courier API connection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourierTestResult"
+
+  # ── Shipments ────────────────────────────────────────────────
+  /shipments:
+    post:
+      operationId: createShipment
+      tags: [shipments]
+      summary: Create shipment for an order (seller)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipmentInput"
+      responses:
+        "201":
+          description: Shipment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shipment"
+
+  /shipments/order/{orderId}:
+    get:
+      operationId: getShipmentByOrder
+      tags: [shipments]
+      summary: Get shipment tracking for an order
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Shipment with tracking status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShipmentTracking"
+
+  # ── Admin ────────────────────────────────────────────────────
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get admin dashboard overview stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+  # ── App Settings ─────────────────────────────────────────────
+  /settings:
+    get:
+      operationId: listSettings
+      tags: [settings]
+      summary: Get all app settings (admin — values masked for secret keys)
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AppSetting"
+    put:
+      operationId: upsertSettings
+      tags: [settings]
+      summary: Update app settings (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsUpdateInput"
+      responses:
+        "200":
+          description: Settings saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+
+# ── Components ───────────────────────────────────────────────────────────────
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    # Pagination wrapper
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+      required: [total, page, limit, totalPages]
+
+    # Category
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        treeCount:
+          type: ["integer", "null"]
+      required: [id, name, slug]
+
+    CategoryInput:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+      required: [name, slug]
+
+    # Tree
+    Tree:
+      type: object
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        commonName:
+          type: string
+        scientificName:
+          type: string
+        family:
+          type: ["string", "null"]
+        nativeRegion:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        climate:
+          type: ["string", "null"]
+        soil:
+          type: ["string", "null"]
+        waterRequirement:
+          type: ["string", "null"]
+        sunlight:
+          type: ["string", "null"]
+        growthRate:
+          type: ["string", "null"]
+        height:
+          type: ["string", "null"]
+        lifespan:
+          type: ["string", "null"]
+        floweringSeason:
+          type: ["string", "null"]
+        fruitingSeason:
+          type: ["string", "null"]
+        uses:
+          type: ["string", "null"]
+        heroImageUrl:
+          type: ["string", "null"]
+        averageRating:
+          type: ["number", "null"]
+        reviewCount:
+          type: ["integer", "null"]
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Category"
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, slug, commonName, scientificName, createdAt]
+
+    TreeDetail:
+      allOf:
+        - $ref: "#/components/schemas/Tree"
+        - type: object
+          properties:
+            varieties:
+              type: array
+              items:
+                $ref: "#/components/schemas/Variety"
+            images:
+              type: array
+              items:
+                $ref: "#/components/schemas/TreeImage"
+
+    TreeInput:
+      type: object
+      properties:
+        commonName:
+          type: string
+        scientificName:
+          type: string
+        family:
+          type: ["string", "null"]
+        nativeRegion:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        climate:
+          type: ["string", "null"]
+        soil:
+          type: ["string", "null"]
+        waterRequirement:
+          type: ["string", "null"]
+        sunlight:
+          type: ["string", "null"]
+        growthRate:
+          type: ["string", "null"]
+        height:
+          type: ["string", "null"]
+        lifespan:
+          type: ["string", "null"]
+        floweringSeason:
+          type: ["string", "null"]
+        fruitingSeason:
+          type: ["string", "null"]
+        uses:
+          type: ["string", "null"]
+        heroImageUrl:
+          type: ["string", "null"]
+        categoryIds:
+          type: array
+          items:
+            type: integer
+      required: [commonName, scientificName]
+
+    PaginatedTrees:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tree"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+      required: [data, meta]
+
+    TreeImage:
+      type: object
+      properties:
+        id:
+          type: integer
+        treeId:
+          type: ["integer", "null"]
+        varietyId:
+          type: ["integer", "null"]
+        imageUrl:
+          type: string
+        imageType:
+          type: string
+          enum: [leaf, flower, fruit, bark, mature_tree, general]
+        sortOrder:
+          type: integer
+      required: [id, imageUrl, imageType, sortOrder]
+
+    TreeImageInput:
+      type: object
+      properties:
+        imageUrl:
+          type: string
+        imageType:
+          type: string
+          enum: [leaf, flower, fruit, bark, mature_tree, general]
+        sortOrder:
+          type: integer
+      required: [imageUrl, imageType]
+
+    VarietyImageInput:
+      type: object
+      properties:
+        imageUrl:
+          type: string
+        imageType:
+          type: string
+          enum: [leaf, flower, fruit, bark, mature_tree, general]
+        sortOrder:
+          type: integer
+      required: [imageUrl, imageType]
+
+    # Variety
+    Variety:
+      type: object
+      properties:
+        id:
+          type: integer
+        treeId:
+          type: integer
+        varietyName:
+          type: string
+        slug:
+          type: string
+        description:
+          type: ["string", "null"]
+        origin:
+          type: ["string", "null"]
+        taste:
+          type: ["string", "null"]
+        fruitSize:
+          type: ["string", "null"]
+        treeSize:
+          type: ["string", "null"]
+        yieldAmount:
+          type: ["string", "null"]
+        diseaseResistance:
+          type: ["string", "null"]
+        harvestTime:
+          type: ["string", "null"]
+        bestClimate:
+          type: ["string", "null"]
+        advantages:
+          type: ["string", "null"]
+        disadvantages:
+          type: ["string", "null"]
+        averageRating:
+          type: ["number", "null"]
+        reviewCount:
+          type: ["integer", "null"]
+        activeListingCount:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, treeId, varietyName, slug, createdAt]
+
+    VarietyDetail:
+      allOf:
+        - $ref: "#/components/schemas/Variety"
+        - type: object
+          properties:
+            tree:
+              $ref: "#/components/schemas/Tree"
+            images:
+              type: array
+              items:
+                $ref: "#/components/schemas/TreeImage"
+
+    VarietyInput:
+      type: object
+      properties:
+        treeId:
+          type: integer
+        varietyName:
+          type: string
+        description:
+          type: ["string", "null"]
+        origin:
+          type: ["string", "null"]
+        taste:
+          type: ["string", "null"]
+        fruitSize:
+          type: ["string", "null"]
+        treeSize:
+          type: ["string", "null"]
+        yieldAmount:
+          type: ["string", "null"]
+        diseaseResistance:
+          type: ["string", "null"]
+        harvestTime:
+          type: ["string", "null"]
+        bestClimate:
+          type: ["string", "null"]
+        advantages:
+          type: ["string", "null"]
+        disadvantages:
+          type: ["string", "null"]
+      required: [treeId, varietyName]
+
+    # Listing
+    Listing:
+      type: object
+      properties:
+        id:
+          type: integer
+        sellerId:
+          type: integer
+        varietyId:
+          type: integer
+        price:
+          type: number
+        currency:
+          type: string
+        quantity:
+          type: integer
+        unit:
+          type: string
+        location:
+          type: ["string", "null"]
+        deliveryAvailable:
+          type: boolean
+        deliveryNotes:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        rejectionReason:
+          type: ["string", "null"]
+        images:
+          type: array
+          items:
+            type: string
+        variety:
+          $ref: "#/components/schemas/Variety"
+        seller:
+          $ref: "#/components/schemas/Profile"
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, sellerId, varietyId, price, currency, quantity, unit, deliveryAvailable, status, images, createdAt]
+
+    ListingPublic:
+      allOf:
+        - $ref: "#/components/schemas/Listing"
+
+    ListingInput:
+      type: object
+      properties:
+        varietyId:
+          type: integer
+        price:
+          type: number
+        currency:
+          type: string
+          default: BDT
+        quantity:
+          type: integer
+        unit:
+          type: string
+          default: per plant
+        location:
+          type: ["string", "null"]
+        deliveryAvailable:
+          type: boolean
+        deliveryNotes:
+          type: ["string", "null"]
+        images:
+          type: array
+          items:
+            type: string
+      required: [varietyId, price, quantity, unit, deliveryAvailable]
+
+    ListingUpdate:
+      type: object
+      properties:
+        price:
+          type: ["number", "null"]
+        quantity:
+          type: ["integer", "null"]
+        unit:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        deliveryAvailable:
+          type: ["boolean", "null"]
+        deliveryNotes:
+          type: ["string", "null"]
+        images:
+          type: ["array", "null"]
+          items:
+            type: string
+
+    RejectListingInput:
+      type: object
+      properties:
+        reason:
+          type: string
+      required: [reason]
+
+    PaginatedListings:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Listing"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+      required: [data, meta]
+
+    # Cart
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        buyerId:
+          type: integer
+        listingId:
+          type: integer
+        quantity:
+          type: integer
+        listing:
+          $ref: "#/components/schemas/Listing"
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, buyerId, listingId, quantity, createdAt]
+
+    CartItemInput:
+      type: object
+      properties:
+        listingId:
+          type: integer
+        quantity:
+          type: integer
+      required: [listingId, quantity]
+
+    CartItemUpdate:
+      type: object
+      properties:
+        quantity:
+          type: integer
+      required: [quantity]
+
+    CartSellerGroup:
+      type: object
+      properties:
+        seller:
+          $ref: "#/components/schemas/Profile"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItem"
+        subtotal:
+          type: number
+      required: [seller, items, subtotal]
+
+    CartSummary:
+      type: object
+      properties:
+        groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartSellerGroup"
+        total:
+          type: number
+        itemCount:
+          type: integer
+      required: [groups, total, itemCount]
+
+    # Orders
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        buyerId:
+          type: integer
+        sellerId:
+          type: integer
+        listingId:
+          type: integer
+        quantity:
+          type: integer
+        totalPrice:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [pending_payment, paid, processing, shipped, delivered, cancelled, refunded]
+        paymentStatus:
+          type: string
+          enum: [pending, paid, failed, refunded]
+        listing:
+          $ref: "#/components/schemas/Listing"
+        buyer:
+          $ref: "#/components/schemas/Profile"
+        seller:
+          $ref: "#/components/schemas/Profile"
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, buyerId, sellerId, listingId, quantity, totalPrice, currency, status, paymentStatus, createdAt]
+
+    OrderDetail:
+      allOf:
+        - $ref: "#/components/schemas/Order"
+        - type: object
+          properties:
+            payment:
+              type: ["object", "null"]
+              properties:
+                bkashPaymentId:
+                  type: ["string", "null"]
+                amount:
+                  type: number
+                status:
+                  type: string
+            shipment:
+              type: ["object", "null"]
+              properties:
+                courierName:
+                  type: ["string", "null"]
+                trackingId:
+                  type: ["string", "null"]
+                status:
+                  type: string
+                trackingUrl:
+                  type: ["string", "null"]
+                lastUpdated:
+                  type: ["string", "null"]
+
+    OrderStatusUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [processing, shipped, delivered, cancelled]
+      required: [status]
+
+    PaginatedOrders:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+      required: [data, meta]
+
+    # bKash
+    BkashPaymentInput:
+      type: object
+      properties:
+        cartItemIds:
+          type: array
+          items:
+            type: integer
+      required: [cartItemIds]
+
+    BkashPaymentResponse:
+      type: object
+      properties:
+        paymentID:
+          type: string
+        bkashURL:
+          type: string
+        statusCode:
+          type: string
+        statusMessage:
+          type: string
+      required: [paymentID, bkashURL, statusCode, statusMessage]
+
+    BkashExecuteInput:
+      type: object
+      properties:
+        paymentID:
+          type: string
+      required: [paymentID]
+
+    BkashExecuteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        paymentID:
+          type: string
+        trxID:
+          type: ["string", "null"]
+        message:
+          type: string
+        orderIds:
+          type: array
+          items:
+            type: integer
+      required: [success, paymentID, message, orderIds]
+
+    # Profile
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+        clerkUserId:
+          type: string
+        role:
+          type: string
+          enum: [buyer, seller, admin]
+        displayName:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        logoUrl:
+          type: ["string", "null"]
+        bannerUrl:
+          type: ["string", "null"]
+        isVerified:
+          type: boolean
+        isSuspended:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, clerkUserId, role, isVerified, isSuspended, createdAt]
+
+    ProfileUpdate:
+      type: object
+      properties:
+        displayName:
+          type: ["string", "null"]
+        logoUrl:
+          type: ["string", "null"]
+        bannerUrl:
+          type: ["string", "null"]
+
+    ProfileSyncInput:
+      type: object
+      properties:
+        clerkUserId:
+          type: string
+        email:
+          type: ["string", "null"]
+        displayName:
+          type: ["string", "null"]
+      required: [clerkUserId]
+
+    PaginatedProfiles:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Profile"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+      required: [data, meta]
+
+    SellerStorefront:
+      type: object
+      properties:
+        profile:
+          $ref: "#/components/schemas/Profile"
+        listings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Listing"
+        stats:
+          type: object
+          properties:
+            totalListings:
+              type: integer
+            averageRating:
+              type: ["number", "null"]
+            reviewCount:
+              type: integer
+          required: [totalListings, reviewCount]
+      required: [profile, listings, stats]
+
+    SuspendInput:
+      type: object
+      properties:
+        suspended:
+          type: boolean
+      required: [suspended]
+
+    # Reviews
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        reviewerId:
+          type: integer
+        targetType:
+          type: string
+          enum: [tree, variety, seller]
+        targetId:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: ["string", "null"]
+        reviewer:
+          $ref: "#/components/schemas/Profile"
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, reviewerId, targetType, targetId, rating, createdAt]
+
+    ReviewInput:
+      type: object
+      properties:
+        targetType:
+          type: string
+          enum: [tree, variety, seller]
+        targetId:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: ["string", "null"]
+      required: [targetType, targetId, rating]
+
+    ReviewStats:
+      type: object
+      properties:
+        averageRating:
+          type: ["number", "null"]
+        totalReviews:
+          type: integer
+        distribution:
+          type: object
+          additionalProperties:
+            type: integer
+      required: [averageRating, totalReviews, distribution]
+
+    PaginatedReviews:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Review"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+        stats:
+          $ref: "#/components/schemas/ReviewStats"
+      required: [data, meta, stats]
+
+    # Wishlist
+    WishlistItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        buyerId:
+          type: integer
+        listingId:
+          type: integer
+        listing:
+          $ref: "#/components/schemas/Listing"
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, buyerId, listingId, createdAt]
+
+    WishlistInput:
+      type: object
+      properties:
+        listingId:
+          type: integer
+      required: [listingId]
+
+    # Variety Requests
+    VarietyRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+        sellerId:
+          type: integer
+        treeId:
+          type: integer
+        requestedVarietyName:
+          type: string
+        notes:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        tree:
+          $ref: "#/components/schemas/Tree"
+        seller:
+          $ref: "#/components/schemas/Profile"
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, sellerId, treeId, requestedVarietyName, status, createdAt]
+
+    VarietyRequestInput:
+      type: object
+      properties:
+        treeId:
+          type: integer
+        requestedVarietyName:
+          type: string
+        notes:
+          type: ["string", "null"]
+      required: [treeId, requestedVarietyName]
+
+    ApproveVarietyRequestInput:
+      type: object
+      properties:
+        varietyName:
+          type: string
+        description:
+          type: ["string", "null"]
+      required: [varietyName]
+
+    RejectVarietyRequestInput:
+      type: object
+      properties:
+        reason:
+          type: ["string", "null"]
+
+    PaginatedVarietyRequests:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/VarietyRequest"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+      required: [data, meta]
+
+    # Couriers
+    CourierIntegration:
+      type: object
+      properties:
+        id:
+          type: integer
+        sellerId:
+          type: integer
+        courierName:
+          type: string
+          enum: [Pathao, Steadfast, RedX, Sundarban, Other]
+        apiKeyMasked:
+          type: string
+        merchantId:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        isDefault:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, sellerId, courierName, apiKeyMasked, isActive, isDefault, createdAt]
+
+    CourierIntegrationInput:
+      type: object
+      properties:
+        courierName:
+          type: string
+          enum: [Pathao, Steadfast, RedX, Sundarban, Other]
+        apiKey:
+          type: string
+        apiSecret:
+          type: ["string", "null"]
+        merchantId:
+          type: ["string", "null"]
+        isDefault:
+          type: boolean
+      required: [courierName, apiKey]
+
+    CourierIntegrationUpdate:
+      type: object
+      properties:
+        isActive:
+          type: ["boolean", "null"]
+        isDefault:
+          type: ["boolean", "null"]
+
+    CourierTestResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success, message]
+
+    # Shipments
+    Shipment:
+      type: object
+      properties:
+        id:
+          type: integer
+        orderId:
+          type: integer
+        sellerId:
+          type: integer
+        courierIntegrationId:
+          type: ["integer", "null"]
+        courierTrackingId:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, picked_up, in_transit, delivered, failed]
+        lastUpdated:
+          type: ["string", "null"]
+        trackingUrl:
+          type: ["string", "null"]
+      required: [id, orderId, sellerId, status]
+
+    ShipmentInput:
+      type: object
+      properties:
+        orderId:
+          type: integer
+        courierIntegrationId:
+          type: integer
+      required: [orderId, courierIntegrationId]
+
+    ShipmentTracking:
+      allOf:
+        - $ref: "#/components/schemas/Shipment"
+        - type: object
+          properties:
+            liveStatus:
+              type: ["string", "null"]
+            statusHistory:
+              type: array
+              items:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+                  note:
+                    type: ["string", "null"]
+
+    # Admin Stats
+    AdminStats:
+      type: object
+      properties:
+        totalTrees:
+          type: integer
+        totalVarieties:
+          type: integer
+        totalSellers:
+          type: integer
+        pendingListings:
+          type: integer
+        pendingVarietyRequests:
+          type: integer
+        totalOrders:
+          type: integer
+        totalRevenue:
+          type: number
+        recentOrders:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+      required: [totalTrees, totalVarieties, totalSellers, pendingListings, pendingVarietyRequests, totalOrders, totalRevenue, recentOrders]
+
+    # App Settings
+    AppSetting:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: ["string", "null"]
+        isSecret:
+          type: boolean
+        description:
+          type: ["string", "null"]
+      required: [key, isSecret]
+
+    SettingsUpdateInput:
+      type: object
+      properties:
+        settings:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+            required: [key, value]
+      required: [settings]
+
+    # Search
+    SearchResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [tree, variety]
+        id:
+          type: integer
+        name:
+          type: string
+        scientificName:
+          type: ["string", "null"]
+        slug:
+          type: string
+        treeSlug:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+      required: [type, id, name, slug]
+
+    SearchResults:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchResult"
+      required: [results]

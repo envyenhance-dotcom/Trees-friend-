@@ -1,0 +1,42 @@
+import { Router } from "express";
+import healthRouter from "./health";
+import categoriesRouter from "./categories";
+import treesRouter from "./trees";
+import varietiesRouter from "./varieties";
+import listingsRouter from "./listings";
+import cartRouter from "./cart";
+import ordersRouter from "./orders";
+import paymentsRouter from "./payments";
+import profilesRouter from "./profiles";
+import sellersRouter from "./sellers";
+import reviewsRouter from "./reviews";
+import wishlistRouter from "./wishlist";
+import varietyRequestsRouter from "./variety-requests";
+import couriersRouter from "./couriers";
+import shipmentsRouter from "./shipments";
+import adminRouter from "./admin";
+import settingsRouter from "./settings";
+import debugRouter from "./debug";
+
+const router = Router();
+
+router.use("/", healthRouter);
+router.use("/debug", debugRouter);
+router.use("/categories", categoriesRouter);
+router.use("/trees", treesRouter);
+router.use("/varieties", varietiesRouter);
+router.use("/listings", listingsRouter);
+router.use("/cart", cartRouter);
+router.use("/orders", ordersRouter);
+router.use("/payments", paymentsRouter);
+router.use("/profiles", profilesRouter);
+router.use("/sellers", sellersRouter);
+router.use("/reviews", reviewsRouter);
+router.use("/wishlist", wishlistRouter);
+router.use("/variety-requests", varietyRequestsRouter);
+router.use("/couriers", couriersRouter);
+router.use("/shipments", shipmentsRouter);
+router.use("/admin", adminRouter);
+router.use("/settings", settingsRouter);
+
+export default router;
